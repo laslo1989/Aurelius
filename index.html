@@ -7,41 +7,60 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;600&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #fcc200; --bg: #080808; --card: #121212; }
-        body { margin: 0; background: var(--bg); color: white; font-family: 'Inter', sans-serif; }
+        :root { --gold: #fcc200; --bg: #0099cc; --card: #1a2a33; }
+        body { margin: 0; background: var(--bg); color: white; font-family: 'Inter', sans-serif; overflow-x: hidden; }
         
-        #main-site { display: block; }
-        #dashboard { display: none; padding: 40px; text-align: center; }
+        #main-site { display: block; padding-top: 20px; }
+        #dashboard { display: none; padding: 40px; text-align: center; background: #080808; min-height: 100vh; }
 
-        header { padding: 20px 50px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; }
-        .logo { font-family: 'Orbitron'; font-size: 24px; color: var(--gold); letter-spacing: 3px; }
+        header { padding: 10px 50px; display: flex; justify-content: flex-end; }
+        .status-top { font-family: 'Orbitron'; color: #00ffff; font-size: 11px; letter-spacing: 1px; }
 
-        .auth-container { max-width: 900px; margin: 40px auto; background: #0f1215; border-radius: 15px; padding: 40px; border: 1px solid #222; }
-        .tabs { display: flex; justify-content: center; gap: 20px; margin-bottom: 30px; }
-        .tab-btn { padding: 12px 40px; font-family: 'Orbitron'; cursor: pointer; border: 2px solid var(--gold); background: transparent; color: var(--gold); border-radius: 5px; }
-        .tab-btn.active { background: var(--gold); color: black; box-shadow: 0 0 20px rgba(252, 194, 0, 0.4); }
+        .auth-container { max-width: 850px; margin: 20px auto; text-align: center; padding: 0 20px; }
+        .tabs { display: flex; justify-content: center; gap: 20px; margin-bottom: 25px; }
+        .tab-btn { 
+            padding: 15px 45px; font-family: 'Orbitron'; cursor: pointer; 
+            border: 2px solid var(--gold); background: transparent; color: var(--gold); 
+            border-radius: 8px; font-size: 14px; transition: 0.3s; font-weight: bold;
+        }
+        .tab-btn.active { background: var(--gold); color: #1a2a33; box-shadow: 0 0 20px rgba(252, 194, 0, 0.6); }
 
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .form-card { background: var(--card); border-radius: 20px; padding: 45px; box-shadow: 0 15px 40px rgba(0,0,0,0.4); }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
         .field { text-align: left; }
-        .field label { display: block; font-size: 11px; color: var(--gold); margin-bottom: 8px; font-family: 'Orbitron'; text-transform: uppercase; }
-        .field input { width: 100%; padding: 14px; background: #000; border: 1px solid #333; color: white; border-radius: 4px; border-left: 3px solid var(--gold); box-sizing: border-box; }
+        .field label { display: block; font-size: 11px; color: var(--gold); margin-bottom: 10px; font-family: 'Orbitron'; text-transform: uppercase; }
+        .field input { 
+            width: 100%; padding: 14px; background: rgba(0,0,0,0.3); border: 1px solid #33444d; 
+            color: white; border-radius: 4px; border-left: 4px solid var(--gold); box-sizing: border-box; outline: none;
+        }
+        .field input:focus { border-color: #fff; border-left-color: #fff; }
 
-        .btn-confirm { width: 100%; grid-column: span 2; padding: 18px; background: var(--gold); border: none; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; margin-top: 20px; border-radius: 5px; }
+        .btn-confirm { 
+            width: 100%; grid-column: span 2; padding: 20px; background: var(--gold); 
+            border: none; font-family: 'Orbitron'; font-weight: bold; cursor: pointer; 
+            margin-top: 25px; border-radius: 8px; font-size: 16px; text-transform: uppercase;
+            transition: 0.2s;
+        }
+        .btn-confirm:hover { filter: brightness(1.1); transform: scale(1.01); }
 
-        .cert-box { background: #111; border-radius: 12px; padding: 30px; display: flex; align-items: center; gap: 20px; margin-top: 40px; border: 1px solid #222; }
-        .balance-box { background: linear-gradient(145deg, #1a1a1a, #000); border: 1px solid var(--gold); padding: 50px; border-radius: 20px; display: inline-block; min-width: 300px; }
+        #status-msg { grid-column: span 2; font-size: 13px; margin-top: 10px; font-weight: bold; min-height: 20px; }
         
-        /* Сообщения об ошибках внутри формы, а не в окнах */
-        #form-error { color: #ff4444; font-size: 12px; grid-column: span 2; text-align: center; margin-top: 10px; display: none; }
+        /* Dashboard */
+        .balance-box { background: #111; border: 1px solid var(--gold); padding: 60px; border-radius: 25px; display: inline-block; margin-top: 50px; box-shadow: 0 0 30px rgba(212, 175, 55, 0.1); }
+        
+        .support-fixed { 
+            position: fixed; bottom: 25px; left: 25px; background: #00ffff; color: black; 
+            padding: 15px 30px; border-radius: 8px; font-family: 'Orbitron'; font-weight: bold; text-decoration: none; font-size: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        @media (max-width: 700px) { .form-grid { grid-template-columns: 1fr; } .btn-confirm { grid-column: span 1; } }
     </style>
 </head>
 <body>
 
 <div id="main-site">
-    <header>
-        <div class="logo">AURELIUS</div>
-        <div style="font-size: 10px; color: var(--gold); font-family: 'Orbitron';">SYSTEM STATUS: ONLINE</div>
-    </header>
+    <header><div class="status-top">SYSTEM STATUS: READY</div></header>
 
     <div class="auth-container">
         <div class="tabs">
@@ -49,40 +68,54 @@
             <button class="tab-btn" id="btn-login" onclick="setMode('login')">LOGIN</button>
         </div>
 
-        <div class="form-grid">
-            <div class="field reg-only"><label>Full Name</label><input type="text" id="f_name"></div>
-            <div class="field reg-only"><label>User Name</label><input type="text" id="u_name"></div>
-            <div class="field"><label>Your Email</label><input type="email" id="u_email"></div>
-            <div class="field reg-only"><label>Confirm Email</label><input type="email"></div>
-            <div class="field"><label>Your Password</label><input type="password" id="u_pass"></div>
-            <div class="field reg-only"><label>Confirm Password</label><input type="password"></div>
-            <div id="form-error"></div>
-            <button class="btn-confirm" id="action-btn" onclick="runAuth()">CONFIRM ACTION</button>
+        <div class="form-card">
+            <div class="form-grid">
+                <div class="field reg-only"><label>Full Name</label><input type="text" id="f_name" placeholder="John Doe"></div>
+                <div class="field reg-only"><label>User Name</label><input type="text" id="u_name" placeholder="john777"></div>
+                <div class="field"><label>Email Address</label><input type="email" id="u_email" placeholder="name@example.com"></div>
+                <div class="field reg-only"><label>Confirm Email</label><input type="email"></div>
+                <div class="field"><label>Password</label><input type="password" id="u_pass" placeholder="••••••••"></div>
+                <div class="field reg-only"><label>Confirm Password</label><input type="password"></div>
+                <div class="field reg-only"><label>Secret Question</label><input type="text" id="s_quest"></div>
+                <div class="field reg-only"><label>Secret Answer</label><input type="text" id="s_ans"></div>
+                
+                <div id="status-msg"></div>
+                <button class="btn-confirm" id="action-btn" onclick="runAuth()">CONFIRM ACTION</button>
+            </div>
+        </div>
+    </div>
+    
+    <a href="https://t.me/Laslo19898989" class="support-fixed" target="_blank">SUPPORT ONLINE</a>
+</div>
+
+<div id="dashboard">
+    <div style="display:flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding-bottom: 20px;">
+        <div style="font-family: 'Orbitron'; color: var(--gold); font-size: 20px;">AURELIUS / DASHBOARD</div>
+        <button onclick="location.reload()" style="background: var(--gold); border:none; padding: 10px 20px; border-radius: 5px; cursor:pointer; font-weight:bold;">LOGOUT</button>
+    </div>
+
+    <div class="balance-box">
+        <p style="color: #888; text-transform: uppercase; letter-spacing: 2px;">Account Balance</p>
+        <h2 style="font-size: 64px; margin: 15px 0; color: #00ff88; font-family: 'Orbitron';">$ 0.00</h2>
+        <div style="display: flex; gap: 15px; justify-content: center; margin-top: 30px;">
+            <button style="padding: 15px 30px; background: #fff; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">DEPOSIT</button>
+            <button style="padding: 15px 30px; background: transparent; border:1px solid #fff; color:#fff; border-radius:5px; font-weight:bold; cursor:pointer;">WITHDRAW</button>
         </div>
     </div>
 </div>
 
-<div id="dashboard">
-    <h1 style="font-family: 'Orbitron'; color: var(--gold);">USER DASHBOARD</h1>
-    <div class="balance-box">
-        <p style="color: #888;">TOTAL BALANCE</p>
-        <h2 style="font-size: 48px; margin: 10px 0; color: #00ff88;">$ 0.00</h2>
-        <button onclick="location.reload()" style="background: none; border: 1px solid #444; color: white; padding: 10px; cursor: pointer;">Logout</button>
-    </div>
-</div>
-
 <script>
-    // --- ВСТАВЬ СВОИ КЛЮЧИ ЗДЕСЬ ---
+    // Подключение твоих ключей
     const URL = 'https://kxpsdcepytmnbtzexlup.supabase.co'; 
-    const KEY = 'Sb_publishable_VtS1oNI1B5mbrEnMn8YtsQ_-Ok6y6k7'; 
+    const KEY = 'sb_publishable_VtS1oNI1B5mbrEnMn8YtsQ_-Ok6y6k7'; 
     const _supa = supabase.createClient(URL, KEY);
 
-    const errBox = document.getElementById('form-error');
+    const msg = document.getElementById('status-msg');
 
     function setMode(m) {
         const regF = document.querySelectorAll('.reg-only');
         const btn = document.getElementById('action-btn');
-        errBox.style.display = 'none';
+        msg.innerText = "";
         if(m === 'login') {
             regF.forEach(f => f.style.display = 'none');
             btn.innerText = "LOGIN";
@@ -100,34 +133,33 @@
         const email = document.getElementById('u_email').value;
         const pass = document.getElementById('u_pass').value;
         const btn = document.getElementById('action-btn');
-        errBox.style.display = 'none';
+        
+        msg.style.color = 'white';
+        msg.innerText = "Connecting to AURELIUS Protocol...";
 
         if(!email || !pass) {
-            errBox.innerText = "Please fill all fields";
-            errBox.style.display = 'block';
+            msg.innerText = "Please enter email and password";
+            msg.style.color = "#ffcc00";
             return;
         }
 
         if(btn.innerText === "LOGIN") {
             const { data, error } = await _supa.auth.signInWithPassword({ email, password: pass });
             if(error) {
-                errBox.innerText = "Invalid credentials";
-                errBox.style.display = 'block';
+                msg.innerText = "Access Denied: Check your details";
+                msg.style.color = "#ff4444";
             } else {
-                // Вход успешен - перекидываем без окон
                 showDashboard();
             }
         } else {
             const { data, error } = await _supa.auth.signUp({ email, password: pass });
             if(error) {
-                errBox.innerText = error.message;
-                errBox.style.display = 'block';
+                msg.innerText = error.message;
+                msg.style.color = "#ff4444";
             } else {
-                // Регистрация успешна - сразу переключаем на вход
                 setMode('login');
-                errBox.innerText = "Registration complete. Please Login.";
-                errBox.style.color = "#00ff88";
-                errBox.style.display = 'block';
+                msg.innerText = "Account created. You can now Login.";
+                msg.style.color = "#00ff88";
             }
         }
     }
@@ -140,4 +172,5 @@
 </script>
 
 </body>
-</html>
+    </html>
+    
