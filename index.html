@@ -3,143 +3,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AURELIUS | Secure Protocol</title>
+    <title>AURELIUS | AI PROTOCOL</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; background-color: #000; color: #fff; font-family: 'Inter', sans-serif; }
-        .wrapper { max-width: 900px; margin: 50px auto; padding: 20px; }
+        :root { --accent: #00f2ff; --bg: #050505; }
+        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; overflow-x: hidden; }
         
-        /* Логотип */
-        .header { text-align: center; margin-bottom: 40px; }
-        .logo { font-family: 'Orbitron'; font-size: 28px; color: #d4af37; letter-spacing: 5px; }
+        /* Фон с роботом */
+        .hero { 
+            position: relative; width: 100%; height: 60vh; 
+            background: url('https://img.freepik.com/free-photo/html-system-websites-concept_23-2150376770.jpg?t=st=1715694303~exp=1715697903~hmac=62f8b5a15383561a346f0436d5386f68a4e324c4784999908331405c9284242d&w=1380') center/cover no-repeat;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .hero::after { content: ''; position: absolute; bottom: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, transparent, var(--bg)); }
 
-        /* Переключатель Регистрация / Логин */
-        .mode-switch { display: flex; justify-content: center; margin-bottom: 30px; border-bottom: 1px solid #222; }
-        .mode-btn { padding: 15px 30px; cursor: pointer; color: #666; font-weight: 600; border-bottom: 2px solid transparent; transition: 0.3s; }
-        .mode-btn.active { color: #d4af37; border-bottom-color: #d4af37; }
+        .logo { font-family: 'Orbitron'; font-size: 32px; color: var(--accent); letter-spacing: 5px; position: relative; z-index: 10; text-shadow: 0 0 15px var(--accent); }
+        
+        .nav-btns { position: absolute; top: 20px; right: 20px; z-index: 100; display: flex; gap: 15px; }
+        .nav-btn { background: rgba(0, 242, 255, 0.1); border: 1px solid var(--accent); color: var(--accent); padding: 10px 20px; border-radius: 5px; cursor: pointer; font-family: 'Orbitron'; font-size: 12px; }
+        .nav-btn.active { background: var(--accent); color: #000; }
+
+        /* Планы */
+        .plans-title { text-align: center; font-family: 'Orbitron'; margin-top: -50px; position: relative; z-index: 10; font-size: 24px; color: #fff; }
+        .plans-container { display: flex; justify-content: center; gap: 20px; padding: 40px 20px; flex-wrap: wrap; }
+        .plan-card { background: rgba(20, 20, 20, 0.8); border: 1px solid #333; border-radius: 15px; padding: 30px; width: 250px; text-align: center; transition: 0.3s; }
+        .plan-card:hover { border-color: var(--accent); box-shadow: 0 0 20px rgba(0, 242, 255, 0.2); }
+        .plan-name { font-family: 'Orbitron'; color: #888; font-size: 14px; }
+        .plan-percent { font-size: 42px; font-weight: 800; color: var(--accent); margin: 15px 0; }
+        .plan-info { font-size: 12px; color: #666; }
 
         /* Форма */
-        .form-container { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 12px; padding: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .auth-section { display: none; max-width: 600px; margin: 0 auto 100px; background: #0a0a0a; padding: 40px; border-radius: 15px; border: 1px solid #1a1a1a; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .field { display: flex; flex-direction: column; }
-        .field label { font-size: 11px; text-transform: uppercase; color: #888; margin-bottom: 8px; letter-spacing: 1px; }
-        .field input { background: #000; border: 1px solid #333; padding: 12px; color: #fff; border-radius: 6px; font-size: 14px; }
-        .field input:focus { border-color: #d4af37; outline: none; }
+        .field label { font-size: 11px; color: var(--accent); margin-bottom: 8px; font-family: 'Orbitron'; }
+        .field input { background: #000; border: 1px solid #333; padding: 12px; color: #fff; border-radius: 5px; }
+        .full { grid-column: span 2; }
+        .submit-btn { background: var(--accent); color: #000; border: none; padding: 18px; border-radius: 5px; font-weight: bold; cursor: pointer; font-family: 'Orbitron'; margin-top: 20px; }
 
-        .full-width { grid-column: span 2; }
-        .btn-submit { background: #d4af37; color: #000; border: none; padding: 18px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 14px; margin-top: 20px; text-transform: uppercase; transition: 0.3s; }
-        .btn-submit:hover { background: #fcc200; }
-
-        #status-bar { text-align: center; margin-top: 15px; font-size: 13px; min-height: 20px; font-weight: 600; }
-
-        /* Личный кабинет */
-        #dashboard { display: none; text-align: center; }
-        .balance-card { background: #0a0a0a; border: 1px solid #d4af37; padding: 50px; border-radius: 15px; margin-top: 30px; }
-        .balance-num { font-size: 48px; color: #00ff88; margin: 15px 0; font-family: 'Orbitron'; }
+        #dashboard { display: none; text-align: center; padding: 100px 20px; }
+        #status { text-align: center; margin-top: 15px; font-size: 13px; }
     </style>
 </head>
 <body>
 
-<div class="wrapper">
-    <div id="auth-screen">
-        <div class="header"><div class="logo">AURELIUS</div></div>
-
-        <div class="mode-switch">
-            <div class="mode-btn active" id="tab-reg" onclick="toggle('reg')">REGISTRATION</div>
-            <div class="mode-btn" id="tab-login" onclick="toggle('login')">SIGN IN</div>
+    <div id="main-ui">
+        <div class="nav-btns">
+            <button class="nav-btn" onclick="showAuth('login')">LOGIN</button>
+            <button class="nav-btn" onclick="showAuth('reg')">REGISTRATION</button>
         </div>
 
-        <div class="form-container">
+        <section class="hero">
+            <div class="logo">AURELIUS</div>
+            <p style="position:relative; z-index:10; font-size:14px; color:#aaa; margin-top:10px;">AI PROTOCOL INVESTMENT SYSTEM</p>
+        </section>
+
+        <h2 class="plans-title">ИНВЕСТИЦИОННЫЕ ПЛАНЫ</h2>
+        
+        <div class="plans-container">
+            <div class="plan-card">
+                <div class="plan-name">Starter</div>
+                <div class="plan-percent">2.1%</div>
+                <div class="plan-info">Everyday / 15 Days</div>
+            </div>
+            <div class="plan-card" style="border-color: var(--accent);">
+                <div class="plan-name">Pro</div>
+                <div class="plan-percent">3.5%</div>
+                <div class="plan-info">Everyday / 30 Days</div>
+            </div>
+            <div class="plan-card">
+                <div class="plan-name">VIP</div>
+                <div class="plan-percent">5.0%</div>
+                <div class="plan-info">Everyday / 60 Days</div>
+            </div>
+        </div>
+
+        <div class="auth-section" id="auth-form">
+            <h3 id="form-title" style="text-align:center; font-family:'Orbitron'; color:var(--accent);">REGISTRATION</h3>
             <div class="grid">
-                <div class="field reg-field"><label>Full Name</label><input type="text" id="inp-name" placeholder="John Doe"></div>
-                <div class="field reg-field"><label>Username</label><input type="text" id="inp-user" placeholder="johnny77"></div>
-                <div class="field"><label>Email Address</label><input type="email" id="inp-email" placeholder="mail@example.com"></div>
-                <div class="field reg-field"><label>Confirm Email</label><input type="email"></div>
-                <div class="field"><label>Password</label><input type="password" id="inp-pass" placeholder="••••••••"></div>
-                <div class="field reg-field"><label>Confirm Password</label><input type="password"></div>
-                
-                <div class="full-width" id="status-bar"></div>
-                <button class="btn-submit full-width" id="btn-action" onclick="submit()">Confirm Registration</button>
+                <div class="field r-only"><label>Full Name</label><input type="text" id="name"></div>
+                <div class="field r-only"><label>Username</label><input type="text" id="user"></div>
+                <div class="field"><label>Email</label><input type="email" id="email"></div>
+                <div class="field"><label>Password</label><input type="password" id="pass"></div>
+                <div id="status" class="full"></div>
+                <button class="submit-btn full" id="main-btn" onclick="auth()">CONFIRM</button>
             </div>
         </div>
     </div>
 
     <div id="dashboard">
-        <div class="header"><div class="logo">AURELIUS</div></div>
-        <div class="balance-card">
-            <p style="color: #666; text-transform: uppercase;">Total Balance</p>
-            <div class="balance-num">$ 0.00</div>
-            <div style="display: flex; gap: 10px; margin-top: 30px;">
-                <button style="flex:1; padding: 15px; background: #fff; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">DEPOSIT</button>
-                <button onclick="location.reload()" style="flex:1; padding: 15px; background: transparent; border:1px solid #444; color:#fff; border-radius:5px; cursor:pointer;">SIGN OUT</button>
-            </div>
+        <div class="logo">AURELIUS</div>
+        <div style="margin-top:50px; border: 1px solid var(--accent); display:inline-block; padding:50px; border-radius:20px;">
+            <p style="color:#666;">BALANCE</p>
+            <h1 style="font-size:48px; color:var(--accent); font-family:'Orbitron';">$ 0.00</h1>
+            <button onclick="location.reload()" style="background:none; border:1px solid #333; color:#fff; padding:10px; cursor:pointer; margin-top:20px;">LOGOUT</button>
         </div>
     </div>
-</div>
 
 <script>
-    // Твои данные Supabase
-    const S_URL = 'https://kxpsdcepytmnbtzexlup.supabase.co';
-    const S_KEY = 'sb_publishable_VtS1oNI1B5mbrEnMn8YtsQ_-Ok6y6k7';
-    const _supabase = supabase.createClient(S_URL, S_KEY);
+    const URL = 'https://kxpsdcepytmnbtzexlup.supabase.co';
+    const KEY = 'sb_publishable_VtS1oNI1B5mbrEnMn8YtsQ_-Ok6y6k7';
+    const _sb = supabase.createClient(URL, KEY);
 
-    const status = document.getElementById('status-bar');
+    function showAuth(mode) {
+        document.getElementById('auth-form').style.display = 'block';
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        const regs = document.querySelectorAll('.r-only');
+        const btn = document.getElementById('main-btn');
+        const title = document.getElementById('form-title');
 
-    function toggle(mode) {
-        const regs = document.querySelectorAll('.reg-field');
-        const btn = document.getElementById('btn-action');
-        status.innerText = "";
-        
         if(mode === 'login') {
-            regs.forEach(f => f.style.display = 'none');
-            btn.innerText = "Sign In";
-            document.getElementById('tab-login').classList.add('active');
-            document.getElementById('tab-reg').classList.remove('active');
+            regs.forEach(r => r.style.display = 'none');
+            title.innerText = "LOGIN";
+            btn.innerText = "SIGN IN";
         } else {
-            regs.forEach(f => f.style.display = 'flex');
-            btn.innerText = "Confirm Registration";
-            document.getElementById('tab-reg').classList.add('active');
-            document.getElementById('tab-login').classList.remove('active');
+            regs.forEach(r => r.style.display = 'flex');
+            title.innerText = "REGISTRATION";
+            btn.innerText = "CONFIRM REGISTRATION";
         }
     }
 
-    async function submit() {
-        const email = document.getElementById('inp-email').value;
-        const pass = document.getElementById('inp-pass').value;
-        const btn = document.getElementById('btn-action');
+    async function auth() {
+        const email = document.getElementById('email').value;
+        const pass = document.getElementById('pass').value;
+        const btn = document.getElementById('main-btn');
+        const status = document.getElementById('status');
 
-        status.style.color = "#d4af37";
-        status.innerText = "Processing...";
+        if(!email || !pass) return status.innerText = "Fill all fields";
+        status.innerText = "Connecting...";
 
-        if(!email || !pass) {
-            status.style.color = "#ff4444";
-            status.innerText = "Error: Fill all fields";
-            return;
-        }
-
-        if(btn.innerText === "Sign In") {
-            const { error } = await _supabase.auth.signInWithPassword({ email, password: pass });
+        if(btn.innerText === "SIGN IN") {
+            const { error } = await _sb.auth.signInWithPassword({ email, password: pass });
             if(error) {
-                status.style.color = "#ff4444";
-                status.innerText = "Login failed: Invalid details";
+                status.innerText = "Login failed";
+                status.style.color = "red";
             } else {
-                document.getElementById('auth-screen').style.display = 'none';
+                document.getElementById('main-ui').style.display = 'none';
                 document.getElementById('dashboard').style.display = 'block';
             }
         } else {
-            const { error } = await _supabase.auth.signUp({ email, password: pass });
+            const { error } = await _sb.auth.signUp({ email, password: pass });
             if(error) {
-                status.style.color = "#ff4444";
                 status.innerText = error.message;
+                status.style.color = "red";
             } else {
-                status.style.color = "#00ff88";
-                status.innerText = "Success! Now switch to SIGN IN tab.";
+                status.innerText = "Success! Now click LOGIN to enter.";
+                status.style.color = "lime";
             }
         }
     }
 </script>
-
 </body>
-                                                                         </html>
-    
+            </html>
+                                              
