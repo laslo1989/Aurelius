@@ -3,187 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AURELIUS | AI PROTOCOL</title>
+    <title>AURELIUS | Investment Solutions</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;600&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #ffd700; --accent: #00f2ff; --dark: #0a0a0a; }
+        :root { --gold: #fbc02d; --gold-light: #ffeb3b; --dark-card: rgba(25, 25, 25, 0.9); }
         
         body {
-            margin: 0; padding: 0; background: #000;
-            color: white; font-family: 'Inter', sans-serif; min-height: 100vh;
-            overflow-x: hidden;
+            margin: 0; padding: 0; background: #080808; color: white;
+            font-family: 'Inter', sans-serif;
+            background-image: radial-gradient(circle at center, #1a1a1a 0%, #050505 100%);
         }
 
-        /* Анимация падающих монет */
-        #coin-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+        /* Top Header */
+        header { padding: 20px; text-align: center; border-bottom: 1px solid #222; }
+        .logo { font-family: 'Orbitron'; font-size: 24px; color: var(--gold); letter-spacing: 5px; }
 
-        /* Бегущая строка */
-        .top-bar {
-            position: fixed; top: 0; width: 100%; height: 40px;
-            background: rgba(0,0,0,0.9); border-bottom: 1px solid var(--accent);
-            display: flex; align-items: center; z-index: 1000; overflow: hidden;
+        /* Ticker Stats */
+        .ticker-bar {
+            background: #000; padding: 10px 0; border-bottom: 1px solid var(--gold);
+            font-family: 'Orbitron'; font-size: 10px; color: #aaa; overflow: hidden;
         }
-        .ticker {
-            white-space: nowrap; animation: move 25s linear infinite;
-            color: var(--accent); font-family: 'Orbitron'; font-size: 0.8em; text-transform: uppercase;
+        .ticker-text { white-space: nowrap; animation: move 30s linear infinite; }
+        @keyframes move { 0% { transform: translateX(100%); } 100% { transform: translateX(-150%); } }
+
+        .container { max-width: 1100px; margin: 40px auto; padding: 20px; }
+        .section-title { font-family: 'Orbitron'; text-align: center; color: var(--gold); font-size: 28px; margin-bottom: 40px; }
+
+        /* Investment Plans Grid */
+        .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-bottom: 60px; }
+        .plan-card {
+            background: var(--dark-card); border: 1px solid #333; border-radius: 15px;
+            padding: 30px; text-align: center; transition: 0.3s; position: relative;
         }
-        @keyframes move { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        .plan-card:hover { border-color: var(--gold); transform: translateY(-5px); }
+        .plan-card img { width: 100px; height: 100px; margin-bottom: 20px; object-fit: contain; }
+        
+        .plan-percent { font-family: 'Orbitron'; font-size: 32px; color: var(--gold); margin: 10px 0; }
+        .plan-desc { font-size: 12px; color: #888; line-height: 1.6; margin-bottom: 20px; }
 
-        .wrapper { max-width: 850px; margin: 100px auto; padding: 20px; text-align: center; position: relative; z-index: 1; }
-
-        /* Кнопки переключения */
-        .tab-box { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; }
-        .btn-tab {
-            padding: 12px 35px; border: 2px solid var(--gold); background: transparent;
-            color: var(--gold); font-family: 'Orbitron'; cursor: pointer; transition: 0.3s;
-            border-radius: 5px; font-weight: bold; text-transform: uppercase;
+        /* Form Card Styling */
+        .ferut-card {
+            background: #111; border-radius: 15px; border-top: 5px solid var(--gold);
+            padding: 40px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
-        .btn-tab.active { background: var(--gold); color: black; box-shadow: 0 0 20px var(--gold); }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 768px) { .form-grid { grid-template-columns: 1fr; } }
 
-        /* Карточка формы */
-        .main-card {
-            background: rgba(10, 10, 10, 0.9); border: 1px solid rgba(255, 215, 0, 0.3);
-            padding: 40px; border-radius: 15px; display: grid;
-            grid-template-columns: 1fr 1fr; gap: 20px; backdrop-filter: blur(10px);
-        }
-        @media (max-width: 600px) { .main-card { grid-template-columns: 1fr; } }
-
-        .field { text-align: left; transition: 0.3s; }
-        .field label { display: block; font-size: 0.7em; color: var(--gold); margin-bottom: 5px; font-family: 'Orbitron'; }
-        .field input {
-            width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid #333;
-            color: white; border-left: 3px solid var(--gold); box-sizing: border-box;
+        .input-box { text-align: left; }
+        .input-box label { display: block; font-size: 11px; color: #888; margin-bottom: 8px; font-family: 'Orbitron'; }
+        .input-box input {
+            width: 100%; padding: 12px; background: #1a1a1a; border: 1px solid #333;
+            border-radius: 5px; color: white; box-sizing: border-box;
         }
 
-        .btn-action {
-            grid-column: 1 / -1; padding: 18px; background: var(--gold); border: none;
-            font-family: 'Orbitron'; font-weight: bold; cursor: pointer; margin-top: 15px;
-            transition: 0.3s; text-transform: uppercase; letter-spacing: 2px;
+        /* 3D Gold Button Styling */
+        .btn-gold-3d {
+            background: linear-gradient(to bottom, #fdd835 0%, #fbc02d 100%);
+            color: black; border: none; padding: 15px 40px; border-radius: 8px;
+            font-family: 'Orbitron'; font-weight: bold; cursor: pointer;
+            text-transform: uppercase; width: 100%; margin-top: 20px;
+            box-shadow: 0 4px 0 #b8860b; transition: 0.2s;
         }
-        .btn-action:hover { background: white; box-shadow: 0 0 30px white; }
+        .btn-gold-3d:hover { background: var(--gold-light); transform: translateY(2px); box-shadow: 0 2px 0 #b8860b; }
 
-        /* Блок сертификата */
-        .cert-section {
-            margin-top: 50px; background: rgba(255, 215, 0, 0.05);
-            padding: 30px; border-radius: 10px; border: 1px solid rgba(255,215,0,0.1);
-            display: flex; align-items: center; gap: 30px; text-align: left;
-        }
-        .cert-img { width: 100px; height: 130px; border: 1px solid var(--gold); display: flex; align-items: center; justify-content: center; font-size: 3em; background: rgba(0,0,0,0.5); }
-
-        .support-btn {
-            position: fixed; bottom: 20px; left: 20px;
-            background: var(--accent); color: black; padding: 12px 25px;
-            border-radius: 5px; font-family: 'Orbitron'; font-weight: bold;
-            text-decoration: none; box-shadow: 0 0 15px var(--accent); z-index: 1000;
+        /* Support Button */
+        .support-tab {
+            position: fixed; bottom: 20px; left: 20px; background: #00bcd4;
+            padding: 10px 20px; border-radius: 30px; font-weight: bold;
+            color: white; text-decoration: none; display: flex; align-items: center; gap: 10px;
         }
     </style>
 </head>
 <body>
 
-<canvas id="coin-canvas"></canvas>
+<header><div class="logo">AURELIUS</div></header>
 
-<div class="top-bar">
-    <div class="ticker">SYSTEM STATUS: OPTIMAL • BTC: $64,859 • AURELIUS PROTOCOL ACTIVE • UK REGULATED: 13693096 • SUPPORT ONLINE</div>
+<div class="ticker-bar">
+    <div class="ticker-text">
+        LATEST DEPOSITS: user*12 ($1,400.00) | user*92 ($2,500.92) | TOTAL WITHDRAWN: $148,260.00 | BTC PRICE: $64,210.00 | ETH PRICE: $3,450.00
+    </div>
 </div>
 
-<div class="wrapper">
-    <div class="tab-box">
-        <button id="tab-reg" class="btn-tab active" onclick="setMode('reg')">Registration</button>
-        <button id="tab-login" class="btn-tab" onclick="setMode('login')">Login</button>
-    </div>
+<div class="container">
+    <h1 class="section-title">INVESTMENT SOLUTIONS</h1>
 
-    <div class="main-card">
-        <div class="field reg-field"><label>Full Name</label><input type="text"></div>
-        <div class="field reg-field"><label>User Name</label><input type="text"></div>
-        <div class="field"><label>Email Address</label><input type="email" id="em"></div>
-        <div class="field reg-field"><label>Confirm Email</label><input type="email"></div>
-        <div class="field"><label>Your Password</label><input type="password" id="p1"></div>
-        <div class="field reg-field"><label>Confirm Password</label><input type="password"></div>
-        <div class="field reg-field"><label>Secret Question</label><input type="text"></div>
-        <div class="field reg-field"><label>Secret Answer</label><input type="text"></div>
+    <div class="plans-grid">
+        <div class="plan-card">
+            <img src="https://cdn-icons-png.flaticon.com/512/2489/2489756.png" alt="Coin">
+            <div style="font-family:'Orbitron'; font-size: 14px;">Starter Mine</div>
+            <div class="plan-percent">2.5% <span style="font-size: 12px;">Daily</span></div>
+            <p class="plan-desc">Perfect for beginners. Start your journey into gold-backed digital assets today.</p>
+            <button class="btn-gold-3d" onclick="scrollToForm()">Open Account</button>
+        </div>
         
-        <button class="btn-action" id="main-btn" onclick="go()">Confirm Registration</button>
+        <div class="plan-card" style="border-top: 3px solid var(--gold);">
+            <img src="https://cdn-icons-png.flaticon.com/512/2489/2489723.png" alt="Bars">
+            <div style="font-family:'Orbitron'; font-size: 14px;">Advanced Core</div>
+            <div class="plan-percent">2.5% <span style="font-size: 12px;">Daily</span></div>
+            <p class="plan-desc">Enhanced protocol for serious miners looking for stable returns.</p>
+            <button class="btn-gold-3d" onclick="scrollToForm()">Open Account</button>
+        </div>
+
+        <div class="plan-card">
+            <img src="https://cdn-icons-png.flaticon.com/512/2845/2845942.png" alt="Chest">
+            <div style="font-family:'Orbitron'; font-size: 14px;">Premium Gold</div>
+            <div class="plan-percent">1.0% <span style="font-size: 12px;">Daily</span></div>
+            <p class="plan-desc">Maximum security and long-term accumulation for institutional partners.</p>
+            <button class="btn-gold-3d" onclick="scrollToForm()">Open Account</button>
+        </div>
     </div>
 
-    <div class="cert-section">
-        <div class="cert-img">📜</div>
-        <div class="cert-info">
-            <h3 style="color:var(--gold); font-family:'Orbitron'; margin:0;">UK REGISTRATION: 13693096</h3>
-            <p style="font-size: 0.8em; color: #aaa; margin-top: 10px;">AURELIUS is a verified investment protocol. Registered under UK laws.</p>
-            <span style="color: #00ff88; font-size: 0.7em; font-family: 'Orbitron';">● ACTIVE & VERIFIED</span>
+    <div class="section-title" id="registration">FERUT CARD</div>
+    <div class="ferut-card">
+        <h3 style="text-align: center; color: var(--gold); font-family: 'Orbitron'; margin-bottom: 30px; font-size: 14px;">AURELIUS | Gold Mining Protocol</h3>
+        
+        <div class="form-grid">
+            <div class="input-box"><label>Full Name:</label><input type="text" placeholder="Enter Full Name"></div>
+            <div class="input-box"><label>User Name:</label><input type="text" placeholder="Choose Username"></div>
+            <div class="input-box"><label>Password:</label><input type="password" placeholder="••••••••"></div>
+            <div class="input-box"><label>Confirm Password:</label><input type="password" placeholder="••••••••"></div>
+            <div class="input-box"><label>Email Address:</label><input type="email" placeholder="example@mail.com"></div>
+            <div class="input-box"><label>Secret Question:</label><input type="text" placeholder="Your favorite city?"></div>
+            <div class="input-box"><label>Secret Answer:</label><input type="text" placeholder="Answer here"></div>
+            <div class="input-box">
+                <label>Your Upline:</label>
+                <input type="text" value="Aurelius AI" disabled style="opacity: 0.5;">
+            </div>
+        </div>
+
+        <div style="max-width: 400px; margin: 30px auto 0;">
+            <button class="btn-gold-3d" onclick="handleAuth()">Confirm & Open Account</button>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/2489/2489756.png" style="width: 40px; vertical-align: middle;">
+            <span style="font-size: 10px; color: #555; margin-left: 10px;">SECURE 256-BIT ENCRYPTION ACTIVE</span>
         </div>
     </div>
 </div>
 
-<a href="https://t.me/Laslo19898989" class="support-btn">SUPPORT ONLINE</a>
+<a href="https://t.me/Laslo19898989" class="support-tab">
+    <span>🌐</span> Support Online
+</a>
 
 <script>
     const supabaseUrl = 'https://kxpsdcepytmnbtzexlup.supabase.co';
     const supabaseKey = 'Sb_publishable_VtS1oNI1B5mbrEnMn8YtsQ_-Ok6y6k7';
     const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-    // Функция переключения между Регистрацией и Входом
-    function setMode(m) {
-        const regFields = document.querySelectorAll('.reg-field');
-        const mainBtn = document.getElementById('main-btn');
-        const tabReg = document.getElementById('tab-reg');
-        const tabLogin = document.getElementById('tab-login');
-
-        if(m === 'login') {
-            regFields.forEach(f => f.style.display = 'none');
-            mainBtn.innerText = "Authorize Login";
-            tabLogin.classList.add('active'); tabReg.classList.remove('active');
-        } else {
-            regFields.forEach(f => f.style.display = 'block');
-            mainBtn.innerText = "Confirm Registration";
-            tabReg.classList.add('active'); tabLogin.classList.remove('active');
-        }
+    function scrollToForm() {
+        document.getElementById('registration').scrollIntoView({ behavior: 'smooth' });
     }
 
-    // Анимация монет на фоне
-    const canvas = document.getElementById('coin-canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    let coins = [];
-    for(let i=0; i<25; i++) {
-        coins.push({
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height,
-            s: Math.random() * 2 + 1,
-            v: Math.random() * 3 + 1
-        });
-    }
-
-    function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "rgba(255, 215, 0, 0.6)";
-        coins.forEach(c => {
-            c.y += c.v;
-            if(c.y > canvas.height) c.y = -20;
-            ctx.beginPath();
-            ctx.arc(c.x, c.y, c.s * 5, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = "black";
-            ctx.fillText("₿", c.x - 3, c.y + 3);
-            ctx.fillStyle = "rgba(255, 215, 0, 0.6)";
-        });
-        requestAnimationFrame(draw);
-    }
-    draw();
-
-    async function go() {
-        const email = document.getElementById('em').value;
-        const pass = document.getElementById('p1').value;
-        const { error } = await _supabase.auth.signInWithPassword({ email, password: pass });
-        if(error) {
-            const { error: se } = await _supabase.auth.signUp({ email, password: pass });
-            if(se) alert(se.message); else alert("Account created! Please Log In.");
-        } else { location.reload(); }
+    async function handleAuth() {
+        alert("Connecting to Secure Terminal... Please check your email after confirmation.");
     }
 </script>
+
 </body>
     </html>
-    
+                                                                    
